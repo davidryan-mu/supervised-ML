@@ -3,70 +3,79 @@ import time
 from yaspin import yaspin
 from yaspin.spinners import Spinners
 
-# Import time estimator
-from scitime import Estimator
-
 # Importing the modelling libraries
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.svm import SVC
-import numpy as np
+from sklearn.neural_network import MLPClassifier
 import pandas as pd
 
+# Import when using validation set from training data
+# from sklearn.model_selection import train_test_split
+# from sklearn.metrics import classification_report, accuracy_score, roc_auc_score, confusion_matrix, plot_roc_curve
+# import matplotlib.pyplot as plt
 
-with yaspin(text = 'Running script...' ) as sp:
-    estimator = Estimator()
+def make_all():
+    with yaspin(text = 'Running script...' ) as sp:
+        # Importing the training and test datasets
+        train_io = pd.read_csv('./train.txt', sep=' ', header=None)
+        test_in = pd.read_csv('./test.txt', sep=' ', header=None)
+        sp.write('> Data read from files')
 
-    # Importing the training and test datasets
-    train_io = pd.read_csv('./train-io.txt', sep=' ', header=None)
-    test_in = pd.read_csv('./test-in.txt', sep=' ', header=None)
-    sp.write('> Data read from files')
+        # Splitting the training sets inputs and outputs
+        X = train_io.iloc[:, 0:12].values
+        y = train_io.iloc[:, 12].values
+        sp.write('> Input/output split')
 
-    # Splitting the training sets inputs and outputs
-    X = train_io.iloc[0:100000, 0:12].values
-    y = train_io.iloc[0:100000, 12].values
-    sp.write('> Input/output split')
+        # Split the training set when using validation set.
+        # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.30, random_state = 4)
+        # sp.write('> Split into 70% and 30% test data')
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20)
-    sp.write('> Split into 80% and 20% test data')
+        # Grab input values of test set
+        test_values = test_in.iloc[:, :].values
 
-    # Grab input values of test set
-    # test_values = test_in.iloc[:, :].values
+        # Building and training the model
+        sp.write('> Building classification model...')
+        classifier = MLPClassifier(hidden_layer_sizes=(150,100,50), max_iter=300,activation = 'relu',solver='adam',random_state=1)
+        sp.write('  ~ DONE: Built classification model')
 
-    # Building and training the model
-    sp.write('> Building sigmoid SVC...')
-    classifier = SVC(gamma = 'auto', kernel = 'sigmoid')
-    sp.write('  ~ DONE: Built sigmoid SVC')
+        sp.write('> Training model - this could take a while...')
+        start_time = time.time()
+        classifier.fit(X, y)
+        elapsed_time = time.time() - start_time
+        sp.write('  ~ DONE: Trained model')
+        sp.write('     -- Elapsed time: ' + str(elapsed_time))
 
-    sp.write('> Training model...')
-    start_time = time.time()
-    classifier.fit(X_train, y_train)
-    elapsed_time = time.time() - start_time
-    sp.write('  ~ DONE: Trained model')
-    sp.write('     -- Elapsed time: ' + str(elapsed_time))
+        # Predicting the Test set results
+        sp.write('> Predicting output...')
+        y_pred = classifier.predict(test_values)
+        sp.write('  ~ DONE: Predicted output')
 
-    # Predicting the Test set results
-    y_pred = classifier.predict(X_test)
+        # Print test output to new file and count occurences
+        zeroCount = 0
+        oneCount = 0
+        newFile = open('test-out.txt', 'w')
+        for element in y_pred:
+            if (element == 0):
+                zeroCount += 1
+            elif (element == 1):
+                oneCount += 1
 
-    # Print test output to new file and count occurences
-    zeroCount = 0
-    oneCount = 0
-    newFile = open('test-out.txt', 'w')
-    for element in y_pred:
-        if (element == 0):
-            zeroCount += 1
-        elif (element == 1):
-            oneCount += 1
+            newFile.write(str(element))
+            newFile.write('\n')
+        newFile.close()
 
-        newFile.write(str(element))
-        newFile.write('\n')
-    newFile.close()
+        sp.text = 'Successfully trained model and predicted values on test set.'
+        sp.ok('✔')
 
-    sp.text = 'Successfully trained model and predicted values on test set.'
-    sp.ok('✔')
+    print()
+    print('New file created/overwritten at test-out.txt \n Number of positives (1\'s): ' +
+        str(oneCount) + '\n Number of negatives (0\'s): ' + str(zeroCount))
 
-print('New file created/overwritten at test-out.txt \n Number of positives (1\'s): ' +
-      str(oneCount) + '\n Number of negatives (0\'s): ' + str(zeroCount))
-
-print(confusion_matrix(y_test, y_pred))
-print(classification_report(y_test, y_pred))
+# Use to find metrics on a validation set      
+# print()
+# print('Confusion matrix: ')
+# print()
+# print(confusion_matrix(y_test, y_pred))
+# print(classification_report(y_test, y_pred))
+# print('Accuracy:', accuracy_score(y_test, y_pred))
+# print('ROC Score:', roc_auc_score(y_test, y_pred))
+# plot_roc_curve(classifier, X_test, y_test)
+# plt.show()
