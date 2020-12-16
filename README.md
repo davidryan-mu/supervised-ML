@@ -22,15 +22,20 @@ yaspin==1.2.0
 
 
 ## Usage
-
-
+**To NOT retrain classifier and regenerate `test-out.txt`**
 1. copy `train.txt` and `test.txt` into the directory
-
-
+2. Navigate to directory in command prompt
+3. Type in the following commands to open an interactive python session and run appropriate script
+ ````
+python
+import script
+script.make_test_out()
+````
 
 **To retrain classifier and regenerate `test-out.txt`**
+1. copy `train.txt` and `test.txt` into the directory
 2. Navigate to directory in command prompt
-3. Type in the following commands
+3. Type in the following commands to open an interactive python session and run appropriate script
  ````
 python
 import script
