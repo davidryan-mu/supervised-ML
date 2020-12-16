@@ -13,10 +13,12 @@ pip install -r requirements.txt
 This command will install the necessary dependencies which are as follows:
 ````
 pandas==1.1.5
+joblib==0.17.0
 scikit_learn==0.23.2
 yaspin==1.2.0
 ````
 * **Pandas** for reading in datasets
+* **Joblib** for saving/loading trained model to/from file
 * **Scikit-learn** for building and training model
 * **Yaspin** for real time progress spinner (training model can take some time)
 
